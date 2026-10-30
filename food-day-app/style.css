@@ -1,120 +1,132 @@
-/* ===== Мобильный стиль: теплое, аппетитное ===== */
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-html, body {
-  height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: linear-gradient(160deg, #fff7ed 0%, #ffedd5 100%);
-  color: #3d2c1e;
+/* ===== Мобильное приложение «Меню на день» v2 ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fff5ec; color: #3a2e2a;
+  max-width: 480px; margin: 0 auto; min-height: 100vh;
+  user-select: none; -webkit-user-select: none;
 }
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+.screen { display: none; flex: 1; flex-direction: column; padding: calc(14px + env(safe-area-inset-top)) 16px calc(78px + env(safe-area-inset-bottom)); }
+.screen.active { display: flex; }
 
-#app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
-
-.screen { display: none; padding: 20px 16px 90px; animation: fadeIn .25s ease; }
-.screen.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
-
-.header h1 { font-size: 26px; font-weight: 800; }
-.header .subtitle { color: #a06b3f; font-size: 14px; margin-top: 4px; }
-
-.date-card {
-  margin: 16px 0;
-  background: #fff;
-  border-radius: 14px;
-  padding: 10px 16px;
-  font-weight: 600;
-  color: #7a5230;
-  box-shadow: 0 2px 8px rgba(160,107,63,.12);
-  display: inline-block;
-}
+.header h1 { font-size: 24px; }
+.header.small { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.header .spacer { width: 40px; }
+.subtitle { font-size: 13px; color: #9b7d6b; margin-top: 2px; }
+.day-title { font-size: 18px; line-height: 1.2; }
 
 /* Кнопки */
-.btn-primary, .btn-secondary, .btn-like, .btn-share, .btn-back {
-  border: none; cursor: pointer; border-radius: 16px; font-size: 17px; font-weight: 700;
-  transition: transform .1s ease, box-shadow .2s ease;
-}
-.btn-primary, .btn-secondary { width: 100%; padding: 16px; margin-bottom: 12px; }
-.btn-primary {
-  background: linear-gradient(135deg, #ff6b35, #ff9f1c);
-  color: #fff; box-shadow: 0 6px 18px rgba(255,107,53,.35);
-}
-.btn-secondary { background: #fff; color: #ff6b35; border: 2px solid #ffd8b0; }
-.btn-primary:active, .btn-secondary:active { transform: scale(.97); }
+button { font-family: inherit; cursor: pointer; border: none; background: none; touch-action: manipulation; }
+.btn-back { font-size: 20px; width: 40px; height: 40px; border-radius: 12px; background: #ffe3cf; color: #d1531c; flex: none; }
+.btn-dice { font-size: 22px; width: 40px; height: 40px; border-radius: 12px; background: #ff6b35; color: #fff; flex: none; box-shadow: 0 3px 8px rgba(255,107,53,.35); }
 
-.actions-row { display: flex; gap: 10px; margin-top: 16px; }
-.btn-like, .btn-share { flex: 1; padding: 12px; font-size: 15px; }
-.btn-like { background: #ffe3ec; color: #d6336c; }
-.btn-like.liked { background: #d6336c; color: #fff; }
-.btn-share { background: #e3f0ff; color: #1c7ed6; }
-
-.btn-back { background: transparent; color: #ff6b35; font-size: 16px; padding: 8px 0; margin-bottom: 8px; }
-.back-row { margin-top: 10px; }
-
-/* Карточки приёмов пищи */
-.menu-result { margin-top: 8px; }
-.meal-card {
-  display: flex; align-items: center; gap: 14px;
-  background: #fff; border-radius: 18px; padding: 14px 16px; margin-bottom: 12px;
-  box-shadow: 0 3px 12px rgba(160,107,63,.10);
-  animation: popIn .3s ease both;
+/* Баннер установки */
+.install-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: #2d2a26; color: #fff; border-radius: 14px;
+  padding: 10px 12px; margin: 10px 0; font-size: 13px;
 }
-@keyframes popIn { from { opacity: 0; transform: scale(.95);} to { opacity: 1; transform: scale(1);} }
-.meal-card:nth-child(2) { animation-delay: .05s; }
-.meal-card:nth-child(3) { animation-delay: .1s; }
-.meal-card:nth-child(4) { animation-delay: .15s; }
-.meal-card:nth-child(5) { animation-delay: .2s; }
+.install-banner button { background: #ff6b35; color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+.install-banner .dismiss { background: transparent; color: #b9b0a8; }
 
-.meal-icon {
-  font-size: 28px; width: 52px; height: 52px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: #fff3e6; border-radius: 14px;
+/* Календарь */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
+.cal-title { font-weight: 700; font-size: 17px; }
+.cal-arrow { font-size: 26px; width: 40px; height: 40px; border-radius: 12px; background: #ffe3cf; color: #d1531c; }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: #b09a8c; margin-bottom: 4px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-cell { aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; position: relative; background: #fdeedd; color: #55483f; }
+.cal-cell.blank { background: transparent; }
+.cal-cell.day { transition: transform .1s; }
+.cal-cell.day:active { transform: scale(.92); }
+.cal-cell .dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 2px; background: transparent; }
+.cal-cell.status-partial .dot { background: #ffb020; }
+.cal-cell.status-full .dot { background: #2ecc71; }
+.cal-cell.status-liked { background: #ffd6e0; }
+.cal-cell.status-liked .dot { background: #e8436f; }
+.cal-cell.today { outline: 2px solid #ff6b35; font-weight: 700; }
+.cal-cell.selected { background: #ff6b35; color: #fff; }
+.legend { display: flex; gap: 12px; justify-content: center; font-size: 11px; color: #9b7d6b; margin-top: 12px; flex-wrap: wrap; }
+
+/* Слоты дня */
+.day-slots { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.slot-card {
+  display: flex; align-items: flex-start; gap: 12px; text-align: left;
+  background: #fff; border-radius: 16px; padding: 14px;
+  box-shadow: 0 2px 8px rgba(120, 70, 40, .08);
+  border: 1.5px solid transparent; width: 100%;
 }
-.meal-label { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: #b07b4a; font-weight: 700; }
-.meal-name { font-size: 16px; font-weight: 700; margin-top: 2px; line-height: 1.3; }
-.meal-time { font-size: 12px; color: #9c7a5c; margin-top: 3px; }
+.slot-card.empty { border-style: dashed; border-color: #e8c9ad; background: #fffaf4; color: #b09a8c; }
+.slot-card:active { transform: scale(.985); }
+.slot-icon { font-size: 24px; flex: none; }
+.slot-body { flex: 1; min-width: 0; }
+.slot-label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: #c98a5e; font-weight: 700; }
+.slot-name { font-size: 16px; font-weight: 700; margin: 2px 0; }
+.slot-desc { font-size: 12.5px; color: #7d6a5e; line-height: 1.4; }
+.slot-hint { font-size: 12px; color: #d1531c; margin-top: 4px; }
+.slot-time { font-size: 11px; color: #b09a8c; flex: none; margin-top: 2px; }
+
+/* Действия */
+.actions-row { display: flex; gap: 10px; margin-top: 14px; }
+.btn-like, .btn-share { flex: 1; padding: 13px; border-radius: 14px; font-size: 15px; font-weight: 700; }
+.btn-like { background: #ffe3cf; color: #d1531c; }
+.btn-like.active { background: #e8436f; color: #fff; }
+.btn-share { background: #ff6b35; color: #fff; }
+
+/* Модалка */
+.modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(40,25,15,.5); backdrop-filter: blur(2px); }
+.modal-sheet {
+  position: relative; width: 100%; max-width: 480px; max-height: 78vh;
+  background: #fffdf9; border-radius: 22px 22px 0 0;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; animation: slideUp .22s ease;
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.modal-header h2 { font-size: 17px; }
+.modal-close { font-size: 16px; width: 34px; height: 34px; border-radius: 10px; background: #fdeedd; color: #8a6a52; }
+.modal-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.choice-item {
+  text-align: left; background: #fff; border: 1.5px solid #f0dcc8;
+  border-radius: 14px; padding: 12px 14px;
+}
+.choice-item.chosen { border-color: #ff6b35; background: #fff4ea; }
+.choice-item:active { transform: scale(.985); }
+.choice-name { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
+.choice-desc { font-size: 12.5px; color: #7d6a5e; line-height: 1.4; }
+.choice-hint { font-size: 12px; color: #d1531c; margin-top: 4px; }
+.btn-clear { margin-top: 12px; padding: 12px; border-radius: 12px; background: #f5e6d8; color: #8a6a52; font-weight: 600; font-size: 14px; }
 
 /* Банк */
-.bank-group { margin-bottom: 20px; }
-.bank-group h2 {
-  font-size: 18px; margin-bottom: 10px; color: #7a5230;
-  border-bottom: 2px solid #ffd8b0; padding-bottom: 6px;
-}
-.bank-item {
-  background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px;
-  box-shadow: 0 2px 8px rgba(160,107,63,.08); font-size: 15px; line-height: 1.45;
-}
-.bank-item b { color: #ff6b35; }
-.bank-item .hint { color: #9c7a5c; font-size: 13px; margin-top: 4px; display: block; }
-
-/* История */
-.history-day {
-  background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 12px;
-  box-shadow: 0 2px 10px rgba(160,107,63,.1);
-}
-.history-day .h-date { font-weight: 800; color: #7a5230; margin-bottom: 8px; }
-.history-day .h-line { font-size: 14px; margin: 3px 0; color: #4d3826; }
-.history-empty { color: #b07b4a; text-align: center; padding: 40px 0; font-size: 15px; }
+.bank-content { margin-top: 8px; }
+.bank-section { margin-bottom: 20px; }
+.bank-section h2 { font-size: 17px; margin-bottom: 8px; }
+.bank-time { font-size: 12px; color: #b09a8c; font-weight: 400; }
+.bank-item { background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(120,70,40,.06); }
+.bank-name { font-weight: 700; font-size: 15px; }
+.bank-desc { font-size: 13px; color: #7d6a5e; margin-top: 3px; line-height: 1.4; }
+.bank-hint { font-size: 12px; color: #d1531c; margin-top: 4px; }
 
 /* Нижняя навигация */
 .bottom-nav {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 480px;
-  display: flex; background: #fff; box-shadow: 0 -3px 14px rgba(160,107,63,.15);
-  border-radius: 20px 20px 0 0; overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  display: flex; justify-content: space-around;
+  background: #fff; border-top: 1px solid #f0dcc8;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 10;
 }
-.nav-btn {
-  flex: 1; border: none; background: transparent; padding: 10px 0 8px;
-  font-size: 18px; color: #c9a882; cursor: pointer; line-height: 1.2;
-}
-.nav-btn span { font-size: 11px; font-weight: 700; }
-.nav-btn.active { color: #ff6b35; }
+.nav-btn { font-size: 20px; color: #b09a8c; line-height: 1.1; text-align: center; flex: 1; }
+.nav-btn span { font-size: 11px; }
+.nav-btn.active { color: #ff6b35; font-weight: 700; }
 
 /* Тост */
 .toast {
-  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-  background: #3d2c1e; color: #fff; padding: 10px 20px; border-radius: 24px;
-  font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 99;
-  white-space: nowrap;
+  position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+  background: #2d2a26; color: #fff; padding: 12px 18px; border-radius: 14px;
+  font-size: 14px; max-width: 88%; text-align: center; z-index: 60;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25); animation: slideUp .2s ease;
 }
-.toast.show { opacity: 1; }

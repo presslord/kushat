@@ -2,114 +2,89 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#ff6b35" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Меню на день" />
   <title>Меню на день 🍳</title>
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app">
-    <!-- ЭКРАН 1: Главный -->
-    <section id="screen-home" class="screen active">
+
+    <!-- ЭКРАН 1: Календарь -->
+    <section id="screen-calendar" class="screen active">
       <header class="header">
-        <h1>🍽 Меню на день</h1>
+        <h1>📅 Меню на день</h1>
         <p class="subtitle">Рацион для набора веса • мы вдвоём 💪</p>
       </header>
-
-      <div class="date-card" id="dateCard">
-        <span id="todayDate"></span>
+      <div class="install-banner" id="installBanner" style="display:none">
+        <span>📲 Установить как приложение?</span>
+        <button id="btnInstall">Установить</button>
+        <button id="btnInstallClose" class="dismiss">✕</button>
       </div>
-
-      <button class="btn-primary" id="btnGenerate">🎲 Собрать день!</button>
-      <button class="btn-secondary" id="btnReroll" style="display:none">🔄 Другой вариант</button>
-
-      <div id="menuResult" class="menu-result" style="display:none">
-        <div class="meal-card" data-slot="breakfast">
-          <div class="meal-icon">🍳</div>
-          <div class="meal-body">
-            <div class="meal-label">Завтрак</div>
-            <div class="meal-name" id="mBreakfast">—</div>
-            <div class="meal-time" id="tBreakfast"></div>
-          </div>
-        </div>
-
-        <div class="meal-card" data-slot="snack1">
-          <div class="meal-icon">🥤</div>
-          <div class="meal-body">
-            <div class="meal-label">Перекус 1</div>
-            <div class="meal-name" id="mSnack1">—</div>
-          </div>
-        </div>
-
-        <div class="meal-card" data-slot="lunch">
-          <div class="meal-icon">🍽</div>
-          <div class="meal-body">
-            <div class="meal-label">Обед</div>
-            <div class="meal-name" id="mLunch">—</div>
-            <div class="meal-time" id="tLunch"></div>
-          </div>
-        </div>
-
-        <div class="meal-card" data-slot="snack2">
-          <div class="meal-icon">🍪</div>
-          <div class="meal-body">
-            <div class="meal-label">Перекус 2</div>
-            <div class="meal-name" id="mSnack2">—</div>
-          </div>
-        </div>
-
-        <div class="meal-card" data-slot="dinner">
-          <div class="meal-icon">🌮</div>
-          <div class="meal-body">
-            <div class="meal-label">Ужин</div>
-            <div class="meal-name" id="mDinner">—</div>
-            <div class="meal-time" id="tDinner"></div>
-          </div>
-        </div>
-
-        <div class="actions-row">
-          <button class="btn-like" id="btnLike">❤️ Нравится</button>
-          <button class="btn-share" id="btnShare">📤 Поделиться</button>
-        </div>
+      <div class="cal-nav">
+        <button id="calPrev" class="cal-arrow">‹</button>
+        <div id="calTitle" class="cal-title"></div>
+        <button id="calNext" class="cal-arrow">›</button>
       </div>
-
-      <nav class="bottom-nav">
-        <button class="nav-btn active" data-screen="home">🏠<br><span>День</span></button>
-        <button class="nav-btn" data-screen="bank">📖<br><span>Банк</span></button>
-        <button class="nav-btn" data-screen="history">🕘<br><span>История</span></button>
-      </nav>
+      <div class="cal-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+      <div id="calGrid" class="cal-grid"></div>
+      <div class="legend">
+        <span>🟢 всё готово</span><span>🟡 выбрано не всё</span><span>⚪ пусто</span>
+      </div>
+      <nav class="bottom-nav" data-nav="calendar"></nav>
     </section>
 
-    <!-- ЭКРАН 2: Банк вариантов -->
+    <!-- ЭКРАН 2: День (редактор) -->
+    <section id="screen-day" class="screen">
+      <header class="header small">
+        <button class="btn-back" id="btnBackCal">←</button>
+        <div>
+          <h1 id="dayTitle" class="day-title">День</h1>
+          <p class="subtitle" id="daySubtitle"></p>
+        </div>
+        <button class="btn-dice" id="btnDice" title="Случайный вариант">🎲</button>
+      </header>
+      <div id="daySlots" class="day-slots"></div>
+      <div class="actions-row">
+        <button class="btn-like" id="btnLike">❤️ Отметить день</button>
+        <button class="btn-share" id="btnShare">📤 Поделиться</button>
+      </div>
+      <nav class="bottom-nav" data-nav="day"></nav>
+    </section>
+
+    <!-- ЭКРАН 3: Банк вариантов -->
     <section id="screen-bank" class="screen">
-      <header class="header">
-        <h1>📖 Банк вариантов</h1>
-        <p class="subtitle">Всё меню для ротации</p>
+      <header class="header small">
+        <button class="btn-back" id="btnBackBank">←</button>
+        <div><h1>📖 Банк вариантов</h1><p class="subtitle">Всё меню для ротации</p></div>
+        <span class="spacer"></span>
       </header>
-      <div class="back-row"><button class="btn-back" data-screen="home">← Назад</button></div>
       <div id="bankContent" class="bank-content"></div>
-      <nav class="bottom-nav">
-        <button class="nav-btn" data-screen="home">🏠<br><span>День</span></button>
-        <button class="nav-btn active" data-screen="bank">📖<br><span>Банк</span></button>
-        <button class="nav-btn" data-screen="history">🕘<br><span>История</span></button>
-      </nav>
+      <nav class="bottom-nav" data-nav="bank"></nav>
     </section>
 
-    <!-- ЭКРАН 3: История -->
-    <section id="screen-history" class="screen">
-      <header class="header">
-        <h1>🕘 История дней</h1>
-        <p class="subtitle">Что уже ели</p>
-      </header>
-      <div class="back-row"><button class="btn-back" data-screen="home">← Назад</button></div>
-      <div id="historyContent" class="history-content"></div>
-      <nav class="bottom-nav">
-        <button class="nav-btn" data-screen="home">🏠<br><span>День</span></button>
-        <button class="nav-btn" data-screen="bank">📖<br><span>Банк</span></button>
-        <button class="nav-btn active" data-screen="history">🕘<br><span>История</span></button>
-      </nav>
-    </section>
+    <!-- Модалка выбора блюда -->
+    <div id="modal" class="modal" style="display:none">
+      <div class="modal-backdrop" id="modalBackdrop"></div>
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h2 id="modalTitle">Выберите блюдо</h2>
+          <button id="modalClose" class="modal-close">✕</button>
+        </div>
+        <div id="modalList" class="modal-list"></div>
+        <button id="modalClear" class="btn-clear">🗑 Очистить слот</button>
+      </div>
+    </div>
+
+    <!-- Тост -->
+    <div id="toast" class="toast" style="display:none"></div>
   </div>
 
   <script src="app.js"></script>
