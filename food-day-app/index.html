@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ff6b35" />
+  <title>Меню на день 🍳</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ЭКРАН 1: Главный -->
+    <section id="screen-home" class="screen active">
+      <header class="header">
+        <h1>🍽 Меню на день</h1>
+        <p class="subtitle">Рацион для набора веса • мы вдвоём 💪</p>
+      </header>
+
+      <div class="date-card" id="dateCard">
+        <span id="todayDate"></span>
+      </div>
+
+      <button class="btn-primary" id="btnGenerate">🎲 Собрать день!</button>
+      <button class="btn-secondary" id="btnReroll" style="display:none">🔄 Другой вариант</button>
+
+      <div id="menuResult" class="menu-result" style="display:none">
+        <div class="meal-card" data-slot="breakfast">
+          <div class="meal-icon">🍳</div>
+          <div class="meal-body">
+            <div class="meal-label">Завтрак</div>
+            <div class="meal-name" id="mBreakfast">—</div>
+            <div class="meal-time" id="tBreakfast"></div>
+          </div>
+        </div>
+
+        <div class="meal-card" data-slot="snack1">
+          <div class="meal-icon">🥤</div>
+          <div class="meal-body">
+            <div class="meal-label">Перекус 1</div>
+            <div class="meal-name" id="mSnack1">—</div>
+          </div>
+        </div>
+
+        <div class="meal-card" data-slot="lunch">
+          <div class="meal-icon">🍽</div>
+          <div class="meal-body">
+            <div class="meal-label">Обед</div>
+            <div class="meal-name" id="mLunch">—</div>
+            <div class="meal-time" id="tLunch"></div>
+          </div>
+        </div>
+
+        <div class="meal-card" data-slot="snack2">
+          <div class="meal-icon">🍪</div>
+          <div class="meal-body">
+            <div class="meal-label">Перекус 2</div>
+            <div class="meal-name" id="mSnack2">—</div>
+          </div>
+        </div>
+
+        <div class="meal-card" data-slot="dinner">
+          <div class="meal-icon">🌮</div>
+          <div class="meal-body">
+            <div class="meal-label">Ужин</div>
+            <div class="meal-name" id="mDinner">—</div>
+            <div class="meal-time" id="tDinner"></div>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-like" id="btnLike">❤️ Нравится</button>
+          <button class="btn-share" id="btnShare">📤 Поделиться</button>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-btn active" data-screen="home">🏠<br><span>День</span></button>
+        <button class="nav-btn" data-screen="bank">📖<br><span>Банк</span></button>
+        <button class="nav-btn" data-screen="history">🕘<br><span>История</span></button>
+      </nav>
+    </section>
+
+    <!-- ЭКРАН 2: Банк вариантов -->
+    <section id="screen-bank" class="screen">
+      <header class="header">
+        <h1>📖 Банк вариантов</h1>
+        <p class="subtitle">Всё меню для ротации</p>
+      </header>
+      <div class="back-row"><button class="btn-back" data-screen="home">← Назад</button></div>
+      <div id="bankContent" class="bank-content"></div>
+      <nav class="bottom-nav">
+        <button class="nav-btn" data-screen="home">🏠<br><span>День</span></button>
+        <button class="nav-btn active" data-screen="bank">📖<br><span>Банк</span></button>
+        <button class="nav-btn" data-screen="history">🕘<br><span>История</span></button>
+      </nav>
+    </section>
+
+    <!-- ЭКРАН 3: История -->
+    <section id="screen-history" class="screen">
+      <header class="header">
+        <h1>🕘 История дней</h1>
+        <p class="subtitle">Что уже ели</p>
+      </header>
+      <div class="back-row"><button class="btn-back" data-screen="home">← Назад</button></div>
+      <div id="historyContent" class="history-content"></div>
+      <nav class="bottom-nav">
+        <button class="nav-btn" data-screen="home">🏠<br><span>День</span></button>
+        <button class="nav-btn" data-screen="bank">📖<br><span>Банк</span></button>
+        <button class="nav-btn active" data-screen="history">🕘<br><span>История</span></button>
+      </nav>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
