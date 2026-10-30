@@ -1,0 +1,120 @@
+/* ===== Мобильный стиль: теплое, аппетитное ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(160deg, #fff7ed 0%, #ffedd5 100%);
+  color: #3d2c1e;
+}
+
+#app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
+
+.screen { display: none; padding: 20px 16px 90px; animation: fadeIn .25s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+
+.header h1 { font-size: 26px; font-weight: 800; }
+.header .subtitle { color: #a06b3f; font-size: 14px; margin-top: 4px; }
+
+.date-card {
+  margin: 16px 0;
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: #7a5230;
+  box-shadow: 0 2px 8px rgba(160,107,63,.12);
+  display: inline-block;
+}
+
+/* Кнопки */
+.btn-primary, .btn-secondary, .btn-like, .btn-share, .btn-back {
+  border: none; cursor: pointer; border-radius: 16px; font-size: 17px; font-weight: 700;
+  transition: transform .1s ease, box-shadow .2s ease;
+}
+.btn-primary, .btn-secondary { width: 100%; padding: 16px; margin-bottom: 12px; }
+.btn-primary {
+  background: linear-gradient(135deg, #ff6b35, #ff9f1c);
+  color: #fff; box-shadow: 0 6px 18px rgba(255,107,53,.35);
+}
+.btn-secondary { background: #fff; color: #ff6b35; border: 2px solid #ffd8b0; }
+.btn-primary:active, .btn-secondary:active { transform: scale(.97); }
+
+.actions-row { display: flex; gap: 10px; margin-top: 16px; }
+.btn-like, .btn-share { flex: 1; padding: 12px; font-size: 15px; }
+.btn-like { background: #ffe3ec; color: #d6336c; }
+.btn-like.liked { background: #d6336c; color: #fff; }
+.btn-share { background: #e3f0ff; color: #1c7ed6; }
+
+.btn-back { background: transparent; color: #ff6b35; font-size: 16px; padding: 8px 0; margin-bottom: 8px; }
+.back-row { margin-top: 10px; }
+
+/* Карточки приёмов пищи */
+.menu-result { margin-top: 8px; }
+.meal-card {
+  display: flex; align-items: center; gap: 14px;
+  background: #fff; border-radius: 18px; padding: 14px 16px; margin-bottom: 12px;
+  box-shadow: 0 3px 12px rgba(160,107,63,.10);
+  animation: popIn .3s ease both;
+}
+@keyframes popIn { from { opacity: 0; transform: scale(.95);} to { opacity: 1; transform: scale(1);} }
+.meal-card:nth-child(2) { animation-delay: .05s; }
+.meal-card:nth-child(3) { animation-delay: .1s; }
+.meal-card:nth-child(4) { animation-delay: .15s; }
+.meal-card:nth-child(5) { animation-delay: .2s; }
+
+.meal-icon {
+  font-size: 28px; width: 52px; height: 52px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff3e6; border-radius: 14px;
+}
+.meal-label { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: #b07b4a; font-weight: 700; }
+.meal-name { font-size: 16px; font-weight: 700; margin-top: 2px; line-height: 1.3; }
+.meal-time { font-size: 12px; color: #9c7a5c; margin-top: 3px; }
+
+/* Банк */
+.bank-group { margin-bottom: 20px; }
+.bank-group h2 {
+  font-size: 18px; margin-bottom: 10px; color: #7a5230;
+  border-bottom: 2px solid #ffd8b0; padding-bottom: 6px;
+}
+.bank-item {
+  background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(160,107,63,.08); font-size: 15px; line-height: 1.45;
+}
+.bank-item b { color: #ff6b35; }
+.bank-item .hint { color: #9c7a5c; font-size: 13px; margin-top: 4px; display: block; }
+
+/* История */
+.history-day {
+  background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(160,107,63,.1);
+}
+.history-day .h-date { font-weight: 800; color: #7a5230; margin-bottom: 8px; }
+.history-day .h-line { font-size: 14px; margin: 3px 0; color: #4d3826; }
+.history-empty { color: #b07b4a; text-align: center; padding: 40px 0; font-size: 15px; }
+
+/* Нижняя навигация */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  display: flex; background: #fff; box-shadow: 0 -3px 14px rgba(160,107,63,.15);
+  border-radius: 20px 20px 0 0; overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.nav-btn {
+  flex: 1; border: none; background: transparent; padding: 10px 0 8px;
+  font-size: 18px; color: #c9a882; cursor: pointer; line-height: 1.2;
+}
+.nav-btn span { font-size: 11px; font-weight: 700; }
+.nav-btn.active { color: #ff6b35; }
+
+/* Тост */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  background: #3d2c1e; color: #fff; padding: 10px 20px; border-radius: 24px;
+  font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 99;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
