@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#ff6b35" />
+  <meta name="theme-color" content="#1c1917" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -19,51 +19,63 @@
 
     <!-- ЭКРАН 1: Календарь -->
     <section id="screen-calendar" class="screen active">
-      <header class="header">
-        <h1>📅 Меню на день</h1>
-        <p class="subtitle">Рацион для набора веса • мы вдвоём 💪</p>
+      <header class="app-header">
+        <div>
+          <h1>Меню на день</h1>
+          <p class="subtitle">Рацион для набора веса • мы вдвоём 💪</p>
+        </div>
+        <button id="btnToday" class="btn-today">Сегодня</button>
       </header>
       <div class="install-banner" id="installBanner" style="display:none">
         <span>📲 Установить как приложение?</span>
         <button id="btnInstall">Установить</button>
         <button id="btnInstallClose" class="dismiss">✕</button>
       </div>
-      <div class="cal-nav">
-        <button id="calPrev" class="cal-arrow">‹</button>
-        <div id="calTitle" class="cal-title"></div>
-        <button id="calNext" class="cal-arrow">›</button>
+      <div class="card cal-card">
+        <div class="cal-nav">
+          <button id="calPrev" class="cal-arrow" aria-label="Предыдущий месяц"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div id="calTitle" class="cal-title"></div>
+          <button id="calNext" class="cal-arrow" aria-label="Следующий месяц"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="cal-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+        <div id="calGrid" class="cal-grid"></div>
       </div>
-      <div class="cal-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
-      <div id="calGrid" class="cal-grid"></div>
       <div class="legend">
-        <span>🟢 всё готово</span><span>🟡 выбрано не всё</span><span>⚪ пусто</span>
+        <span><i class="lg-dot full"></i>всё готово</span>
+        <span><i class="lg-dot partial"></i>выбрано не всё</span>
+        <span><i class="lg-dot liked"></i>нравится</span>
+        <span><i class="lg-dot empty"></i>пусто</span>
       </div>
       <nav class="bottom-nav" data-nav="calendar"></nav>
     </section>
 
     <!-- ЭКРАН 2: День (редактор) -->
     <section id="screen-day" class="screen">
-      <header class="header small">
-        <button class="btn-back" id="btnBackCal">←</button>
-        <div>
+      <header class="app-header">
+        <button class="btn-back" id="btnBackCal" aria-label="Назад к календарю"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="head-center">
           <h1 id="dayTitle" class="day-title">День</h1>
           <p class="subtitle" id="daySubtitle"></p>
         </div>
-        <button class="btn-dice" id="btnDice" title="Случайный вариант">🎲</button>
+        <button class="btn-dice" id="btnDice" title="Заполнить пустые слоты"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.7" cy="8.7" r="1.45" fill="currentColor" stroke="none"/><circle cx="15.3" cy="8.7" r="1.45" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.45" fill="currentColor" stroke="none"/><circle cx="8.7" cy="15.3" r="1.45" fill="currentColor" stroke="none"/><circle cx="15.3" cy="15.3" r="1.45" fill="currentColor" stroke="none"/></svg></button>
       </header>
+      <div class="progress-wrap"><div class="progress-bar"><i id="progressFill"></i></div><span id="progressText" class="progress-text"></span></div>
       <div id="daySlots" class="day-slots"></div>
       <div class="actions-row">
-        <button class="btn-like" id="btnLike">❤️ Отметить день</button>
-        <button class="btn-share" id="btnShare">📤 Поделиться</button>
+        <button class="btn-like" id="btnLike">♥ В избранное</button>
+        <button class="btn-share" id="btnShare">↗ Поделиться</button>
       </div>
       <nav class="bottom-nav" data-nav="day"></nav>
     </section>
 
     <!-- ЭКРАН 3: Банк вариантов -->
     <section id="screen-bank" class="screen">
-      <header class="header small">
-        <button class="btn-back" id="btnBackBank">←</button>
-        <div><h1>📖 Банк вариантов</h1><p class="subtitle">Всё меню для ротации</p></div>
+      <header class="app-header">
+        <button class="btn-back" id="btnBackBank" aria-label="Назад к календарю"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div>
+          <h1>Банк вариантов</h1>
+          <p class="subtitle">Всё меню для ротации</p>
+        </div>
         <span class="spacer"></span>
       </header>
       <div id="bankContent" class="bank-content"></div>
