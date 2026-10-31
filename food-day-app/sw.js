@@ -1,5 +1,5 @@
 /* Service Worker: офлайн-кэш приложения */
-const CACHE = "foodday-v2";
+const CACHE = "foodday-v4";
 const ASSETS = [
   "./", "./index.html", "./app.js", "./style.css",
   "./manifest.webmanifest", "./icon.svg",

@@ -1,17 +1,18 @@
-/* ===== «Меню на день» v3 — чистый мобильный дизайн ===== */
+/* ===== «Меню на день» v4 — зелёная тема ===== */
 :root {
-  --bg: #f6f4f1;
+  --bg: #f3f6f2;
   --surface: #ffffff;
-  --ink: #1c1917;
-  --muted: #8d867e;
-  --line: #e9e4dd;
-  --accent: #e85d26;
-  --accent-soft: #fdeee5;
+  --ink: #17241c;
+  --muted: #7d8a80;
+  --line: #e2e9e0;
+  --accent: #2e9e5b;          /* приятный зелёный */
+  --accent-strong: #268452;
+  --accent-soft: #e4f2e9;
   --green: #2fb673;
   --amber: #f2a71b;
   --pink: #e8436f;
   --radius: 18px;
-  --shadow: 0 1px 2px rgba(28,25,23,.05), 0 6px 18px rgba(28,25,23,.06);
+  --shadow: 0 1px 2px rgba(23,36,28,.05), 0 6px 18px rgba(23,36,28,.06);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
@@ -30,10 +31,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ---------- Шапки ---------- */
 .app-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; margin-bottom: 14px; min-height: 44px; }
+.app-header > div:first-child { min-width: 0; }
 .app-header h1 { font-size: 20px; font-weight: 800; letter-spacing: -.3px; line-height: 1.15; }
 .app-header .head-center { text-align: center; min-width: 0; }
 .app-header .day-title { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.subtitle { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.subtitle { font-size: 12.5px; color: var(--muted); margin-top: 2px; white-space: normal; }
 .spacer { width: 44px; }
 .btn-back, .btn-dice {
   width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center;
@@ -123,15 +125,42 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .slot-name { font-size: 15.5px; font-weight: 700; margin: 3px 0 1px; letter-spacing: -.2px; }
 .slot-desc { font-size: 12.5px; color: var(--muted); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .slot-hint { font-size: 11.5px; color: var(--accent); margin-top: 4px; font-weight: 600; }
-.slot-time { font-size: 11px; color: var(--muted); flex: none; align-self: flex-start; margin-top: 3px; background: var(--bg); border: 1px solid var(--line); padding: 3px 8px; border-radius: 999px; }
+.slot-time { font-size: 11px; color: var(--muted); flex: none; background: var(--bg); border: 1px solid var(--line); padding: 3px 8px; border-radius: 999px; }
+.slot-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; align-self: flex-start; margin-top: 3px; }
+.slot-kcal { font-size: 11.5px; font-weight: 800; color: var(--accent-strong); background: var(--accent-soft); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+
+/* ---------- Счётчик калорий ---------- */
+.kcal-card { padding: 14px 16px; margin-bottom: 14px; }
+.kcal-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.kcal-big { display: flex; align-items: baseline; gap: 6px; }
+.kcal-big span:first-child { font-size: 28px; font-weight: 800; letter-spacing: -.5px; color: var(--ink); }
+.kcal-unit { font-size: 13px; font-weight: 700; color: var(--muted); }
+.kcal-pair { font-size: 12px; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.kcal-bar { height: 8px; border-radius: 999px; background: var(--accent-soft); overflow: hidden; }
+.kcal-bar i { display: block; height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .35s ease; }
+.kcal-goal-label { font-size: 11.5px; color: var(--muted); margin-top: 8px; font-weight: 600; }
+
+/* ---------- Настройки ---------- */
+.settings-card { padding: 16px; }
+.settings-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; letter-spacing: -.2px; }
+.settings-note { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+.goal-row { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 10px; margin-bottom: 14px; }
+.goal-step { height: 52px; border-radius: 16px; background: var(--accent-soft); color: var(--accent-strong); font-size: 24px; font-weight: 800; display: grid; place-items: center; border: 1px solid transparent; }
+.goal-step:active { transform: scale(.93); }
+.goal-value { text-align: center; }
+.goal-value span { font-size: 32px; font-weight: 800; letter-spacing: -.5px; }
+.goal-value small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+#goalSlider { width: 100%; accent-color: var(--accent); margin-bottom: 14px; }
+.goal-presets { display: flex; gap: 8px; }
+.preset { flex: 1; padding: 10px 4px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.preset.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* ---------- Действия ---------- */
 .actions-row { display: flex; gap: 10px; margin-top: 16px; }
-.btn-like, .btn-share { flex: 1; padding: 14px; border-radius: 14px; font-size: 14.5px; font-weight: 700; transition: transform .1s; }
+.btn-like { flex: 1; padding: 14px; border-radius: 14px; font-size: 14.5px; font-weight: 700; transition: transform .1s; }
 .btn-like { background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
 .btn-like.active { background: var(--pink); border-color: var(--pink); color: #fff; }
-.btn-share { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(232,93,38,.3); }
-.btn-like:active, .btn-share:active { transform: scale(.96); }
+.btn-like:active { transform: scale(.96); }
 
 /* ---------- Модалка ---------- */
 .modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
@@ -158,6 +187,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .choice-name { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
 .choice-desc { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
 .choice-hint { font-size: 12px; color: var(--accent); margin-top: 5px; font-weight: 600; }
+.choice-kcal { display: inline-block; font-size: 11.5px; font-weight: 800; color: var(--accent-strong); background: var(--accent-soft); padding: 3px 9px; border-radius: 999px; margin-top: 7px; }
 .btn-clear { margin-top: 12px; padding: 13px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); font-weight: 700; font-size: 14px; }
 
 /* ---------- Банк ---------- */
