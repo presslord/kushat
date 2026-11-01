@@ -1,5 +1,5 @@
 /* Service Worker: офлайн-кэш приложения */
-const CACHE = "foodday-v7";
+const CACHE = "foodday-v8";
 // относительные пути от корня SW — корректно работает и на GitHub Pages (/репозиторий/)
 const BASE = self.location.href.replace("sw.js", "");
 const ASSETS = [
