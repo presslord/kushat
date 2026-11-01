@@ -314,3 +314,25 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-size: 13.5px; font-weight: 600; max-width: 88%; text-align: center; z-index: 60;
   box-shadow: 0 8px 24px rgba(0,0,0,.25); animation: slideUp .2s ease;
 }
+
+/* ---------- Кнопка «Рецепт» и модалка рецепта ---------- */
+.slot-card { position: relative; }
+.recipe-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 8px; padding: 5px 10px; border-radius: 999px;
+  border: 1.5px solid var(--accent); background: var(--accent-soft);
+  color: var(--accent-strong); font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: transform .1s ease;
+}
+.recipe-btn:active { transform: scale(.94); }
+.choice-item { position: relative; }
+.bank-item { position: relative; }
+.recipe-body { padding: 4px 16px calc(18px + env(safe-area-inset-bottom)); overflow-y: auto; max-height: 65vh; }
+.recipe-meta {
+  text-align: center; font-size: 13px; font-weight: 700; color: var(--accent-strong);
+  background: var(--accent-soft); border-radius: 12px; padding: 8px 10px; margin-bottom: 12px;
+}
+.recipe-sub { font-size: 13px; font-weight: 800; color: var(--ink); margin: 12px 0 6px; }
+.recipe-list, .recipe-steps { margin: 0; padding-left: 20px; }
+.recipe-list li, .recipe-steps li { font-size: 13.5px; line-height: 1.45; color: var(--muted); margin-bottom: 5px; }
+.recipe-steps li::marker { color: var(--accent); font-weight: 800; }
