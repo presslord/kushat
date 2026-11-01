@@ -50,22 +50,57 @@ const BANK = {
 const SLOT_ORDER = ["breakfast", "snack1", "lunch", "snack2", "dinner"];
 
 // ---------- ХРАНИЛИЩЕ ----------
-const LS_PLAN = "foodday.plan.v2"; // { "2026-10-31": { breakfast: 0, snack1: 2, ..., liked: bool } }
-const LS_GOAL = "foodday.kcalGoal"; // целевой калораж на день (на одного)
+const LS_PLAN = "foodday.plan.v2";   // { "2026-10-31": { breakfast: 0, snack1: 2, ..., portions: { breakfast: 1.5 }, liked: bool } }
+const LS_GOAL = "foodday.kcalGoal";  // целевой калораж на день (на одного)
+const LS_GRAM = "foodday.gramScale"; // множитель граммовок: 1 = обычные порции из банка
 
 function loadPlan() { try { return JSON.parse(localStorage.getItem(LS_PLAN)) || {}; } catch (e) { return {}; } }
 function savePlan(plan) { localStorage.setItem(LS_PLAN, JSON.stringify(plan)); }
 function getGoal() { const g = parseInt(localStorage.getItem(LS_GOAL), 10); return isNaN(g) ? 3000 : g; }
 function setGoal(v) { localStorage.setItem(LS_GOAL, String(v)); }
+function getGramScale() { const g = parseFloat(localStorage.getItem(LS_GRAM)); return isNaN(g) ? 1 : g; }
+function setGramScale(v) { localStorage.setItem(LS_GRAM, String(v)); }
+
+// ---------- ГРАММОВКИ / ПОРЦИИ ----------
+const PORTION_PRESETS = [0.5, 0.75, 1, 1.5, 2];
+const PORTION_LABELS = { 0.5: "½", 0.75: "¾", 1: "×1", 1.5: "×1.5", 2: "×2" };
+
+function fmtNum(n) { return Number(n.toFixed(1)).toString().replace(".", ","); }
+
+// коэффициент порции для слота в плане дня (1 по умолчанию)
+function slotCoef(p, slot) {
+  const c = p.portions && p.portions[slot];
+  return (typeof c === "number" && c > 0) ? c : 1;
+}
+
+// калорийность блюда с учётом глобальной шкалы граммовок и ручной порции
+function itemKcal(item, coef) {
+  if (!item || !item.kcal) return 0;
+  return Math.round(item.kcal * getGramScale() * coef);
+}
 
 // сумма калорий за день (на одного)
 function dayKcal(p) {
   let sum = 0;
   SLOT_ORDER.forEach(s => {
     const idx = p[s];
-    if (typeof idx === "number" && BANK[s].items[idx]) sum += BANK[s].items[idx].kcal || 0;
+    if (typeof idx === "number" && BANK[s].items[idx]) sum += itemKcal(BANK[s].items[idx], slotCoef(p, s));
   });
   return sum;
+}
+
+// установить ручную порцию для слота (null/1 — сброс)
+function setSlotCoef(slot, coef) {
+  const plan = loadPlan();
+  const p = plan[currentDate] || {};
+  if (!p.portions) p.portions = {};
+  if (coef === null || coef === 1) delete p.portions[slot]; else p.portions[slot] = coef;
+  if (Object.keys(p).filter(k => k !== "portions").length === 0 && Object.keys(p.portions).length === 0) {
+    delete plan[currentDate];
+  } else {
+    plan[currentDate] = p;
+  }
+  savePlan(plan);
 }
 
 function ymd(d) {
@@ -195,6 +230,7 @@ function renderDay() {
     const cat = BANK[slot];
     const idx = p[slot];
     const item = typeof idx === "number" ? cat.items[idx] : null;
+    const coef = slotCoef(p, slot);
     const card = document.createElement("button");
     card.className = "slot-card" + (item ? "" : " empty");
     card.innerHTML = `
@@ -207,7 +243,7 @@ function renderDay() {
       </div>
       <div class="slot-side">
         <div class="slot-time">${cat.time}</div>
-        ${item && item.kcal ? `<div class="slot-kcal">${item.kcal} ккал</div>` : ""}
+        ${item ? `<div class="slot-kcal">${itemKcal(item, coef)} ккал${coef !== 1 ? ` <b>(${PORTION_LABELS[coef] || "×" + fmtNum(coef)})</b>` : ""}</div>` : ""}
       </div>`;
     card.onclick = () => openModal(slot);
     wrap.appendChild(card);
@@ -250,10 +286,13 @@ document.getElementById("btnLike").onclick = () => {
 };
 
 // ---------- МОДАЛКА ВЫБОРА ----------
+let modalCoef = 1; // текущая выбранная порция в открытой модалке
+
 function openModal(slot) {
   currentSlot = slot;
   const cat = BANK[slot];
   const p = getDayPlan();
+  modalCoef = slotCoef(p, slot);
   document.getElementById("modalTitle").textContent = `${cat.icon} ${cat.slotLabel} (${cat.time})`;
   const list = document.getElementById("modalList");
   list.innerHTML = "";
@@ -263,16 +302,55 @@ function openModal(slot) {
     b.innerHTML = `<div class="choice-name">${p[slot] === i ? "✅ " : ""}${item.name}</div>
       <div class="choice-desc">${item.desc}</div>
       ${item.hint ? `<div class="choice-hint">💡 ${item.hint}</div>` : ""}
-      ${item.kcal ? `<div class="choice-kcal">🔥 ${item.kcal} ккал</div>` : ""}`;
-    b.onclick = () => { setSlot(slot, i); closeModal(); renderDay(); };
+      ${item.kcal ? `<div class="choice-kcal">🔥 ${itemKcal(item, modalCoef)} ккал${modalCoef !== 1 ? ` <b>(${PORTION_LABELS[modalCoef] || "×" + fmtNum(modalCoef)})</b>` : ""}</div>` : ""}`;
+    b.onclick = () => { setSlot(slot, i); if (modalCoef !== 1) setSlotCoef(slot, modalCoef); closeModal(); renderDay(); };
     list.appendChild(b);
   });
+  renderPortionRow(!!(typeof p[slot] === "number"));
   document.getElementById("modal").style.display = "flex";
 }
+
+// строка выбора граммовки внутри шторки
+function renderPortionRow(hasChoice) {
+  const label = document.getElementById("portionValue");
+  const cur = itemKcalCur();
+  label.textContent = cur ? cur.toLocaleString("ru-RU") + " ккал" : "сначала выберите блюдо";
+  const wrap = document.getElementById("portionPresets");
+  wrap.innerHTML = "";
+  PORTION_PRESETS.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "portion-btn" + (c === modalCoef ? " active" : "");
+    b.textContent = PORTION_LABELS[c];
+    b.disabled = !hasChoice;
+    b.onclick = () => {
+      modalCoef = c;
+      if (hasChoice) setSlotCoef(currentSlot, c);
+      // пересчитываем калорийность во всех вариантах шторки
+      const items = BANK[currentSlot].items;
+      Array.from(document.getElementById("modalList").children).forEach((el, i) => {
+        const item = items[i];
+        if (!item || !item.kcal) return;
+        const k = el.querySelector(".choice-kcal");
+        if (k) k.innerHTML = `🔥 ${itemKcal(item, modalCoef)} ккал${modalCoef !== 1 ? ` <b>(${PORTION_LABELS[modalCoef] || "×" + fmtNum(modalCoef)})</b>` : ""}`;
+      });
+      renderPortionRow(hasChoice);
+      renderDay();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function itemKcalCur() {
+  const p = getDayPlan();
+  const idx = p[currentSlot];
+  if (typeof idx !== "number") return 0;
+  return itemKcal(BANK[currentSlot].items[idx], modalCoef);
+}
+
 function closeModal() { document.getElementById("modal").style.display = "none"; }
 document.getElementById("modalClose").onclick = closeModal;
 document.getElementById("modalBackdrop").onclick = closeModal;
-document.getElementById("modalClear").onclick = () => { setSlot(currentSlot, null); closeModal(); renderDay(); };
+document.getElementById("modalClear").onclick = () => { setSlot(currentSlot, null); setSlotCoef(currentSlot, null); closeModal(); renderDay(); };
 
 // ---------- БАНК ----------
 function renderBank() {
@@ -296,8 +374,14 @@ function renderBank() {
 }
 document.getElementById("btnBackBank").onclick = () => showScreen("calendar");
 
-// ---------- НАСТРОЙКИ (цель калорий) ----------
+// ---------- НАСТРОЙКИ (цель калорий + граммовки) ----------
 const PRESETS = [2500, 3000, 3500, 4000];
+const GRAM_PRESETS = [
+  { v: 0.75, label: "Маленькие ×0.75" },
+  { v: 1,    label: "Обычные ×1" },
+  { v: 1.25, label: "Большие ×1.25" },
+  { v: 1.5,  label: "Огромные ×1.5" }
+];
 function renderSettings() {
   const goal = getGoal();
   document.getElementById("goalValue").textContent = goal.toLocaleString("ru-RU");
@@ -311,10 +395,25 @@ function renderSettings() {
     b.onclick = () => { setGoal(v); renderSettings(); };
     wrap.appendChild(b);
   });
+
+  // шкала граммовок
+  const gs = getGramScale();
+  document.getElementById("gramValue").textContent = "×" + fmtNum(gs);
+  document.getElementById("gramSlider").value = gs;
+  const gwrap = document.getElementById("gramPresets");
+  gwrap.innerHTML = "";
+  GRAM_PRESETS.forEach(p => {
+    const b = document.createElement("button");
+    b.className = "preset" + (p.v === gs ? " active" : "");
+    b.textContent = p.label;
+    b.onclick = () => { setGramScale(p.v); renderSettings(); if (document.getElementById("screen-day").classList.contains("active")) renderDay(); };
+    gwrap.appendChild(b);
+  });
 }
 document.getElementById("goalMinus").onclick = () => { setGoal(Math.max(1500, getGoal() - 100)); renderSettings(); };
 document.getElementById("goalPlus").onclick = () => { setGoal(Math.min(5000, getGoal() + 100)); renderSettings(); };
 document.getElementById("goalSlider").oninput = (e) => { setGoal(parseInt(e.target.value, 10)); renderSettings(); };
+document.getElementById("gramSlider").oninput = (e) => { setGramScale(parseFloat(e.target.value)); renderSettings(); };
 
 // ---------- ТОСТ ----------
 let toastTimer = null;
