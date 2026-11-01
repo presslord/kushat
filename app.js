@@ -50,33 +50,63 @@ const BANK = {
 const SLOT_ORDER = ["breakfast", "snack1", "lunch", "snack2", "dinner"];
 
 // ---------- ХРАНИЛИЩЕ ----------
-const LS_PLAN = "foodday.plan.v2";   // { "2026-10-31": { breakfast: 0, snack1: 2, ..., portions: { breakfast: 1.5 }, liked: bool } }
+const LS_PLAN = "foodday.plan.v2";   // { "2026-10-31": { breakfast: 0, snack1: 2, ..., grams: { breakfast: 400 }, liked: bool } }
 const LS_GOAL = "foodday.kcalGoal";  // целевой калораж на день (на одного)
-const LS_GRAM = "foodday.gramScale"; // множитель граммовок: 1 = обычные порции из банка
+const LS_GRAM = "foodday.gramScale"; // базовая граммовка блюда (г): 0 = стандарт из банка
 
 function loadPlan() { try { return JSON.parse(localStorage.getItem(LS_PLAN)) || {}; } catch (e) { return {}; } }
 function savePlan(plan) { localStorage.setItem(LS_PLAN, JSON.stringify(plan)); }
 function getGoal() { const g = parseInt(localStorage.getItem(LS_GOAL), 10); return isNaN(g) ? 3000 : g; }
 function setGoal(v) { localStorage.setItem(LS_GOAL, String(v)); }
-function getGramScale() { const g = parseFloat(localStorage.getItem(LS_GRAM)); return isNaN(g) ? 1 : g; }
+function getGramScale() { const g = parseInt(localStorage.getItem(LS_GRAM), 10); return (isNaN(g) || g < 0) ? 0 : g; }
 function setGramScale(v) { localStorage.setItem(LS_GRAM, String(v)); }
 
 // ---------- ГРАММОВКИ / ПОРЦИИ ----------
-const PORTION_PRESETS = [0.5, 0.75, 1, 1.5, 2];
-const PORTION_LABELS = { 0.5: "½", 0.75: "¾", 1: "×1", 1.5: "×1.5", 2: "×2" };
+// базовый вес одной порции каждого блюда (граммы). 0 — блюдо без веса (например напиток)
+const BASE_G = {
+  "Классическая овсянка-бомба": 450,
+  "Ленивые сырники": 350,
+  "Скрэмбл с сыром и индейкой": 400,
+  "Горячие бутерброды": 300,
+  "Смузи-гейнер": 550,
+  "Орехово-фруктовый микс": 250,
+  "Сэндвич с сыром": 220,
+  "Питьевой йогурт/ряженка + печенье": 620,
+  "Котлеты с гречкой": 450,
+  "Пельмени или вареники (ленивый чит-код)": 400,
+  "Паста «а-ля Карбонара»": 450,
+  "Картофельное пюре + котлеты": 500,
+  "Домашняя шаурма": 450,
+  "Куриные бедра в духовке (закинул и забыл)": 450,
+  "Макароны по-студенчески": 500,
+  "Творожный ужин (если совсем лень жевать)": 300
+};
 
-function fmtNum(n) { return Number(n.toFixed(1)).toString().replace(".", ","); }
-
-// коэффициент порции для слота в плане дня (1 по умолчанию)
-function slotCoef(p, slot) {
-  const c = p.portions && p.portions[slot];
-  return (typeof c === "number" && c > 0) ? c : 1;
+// базовые граммы блюда: ручная глобальная граммовка (если задана) или стандарт из банка
+function baseGrams(item) {
+  if (!item) return 0;
+  const gs = getGramScale();
+  if (gs > 0) return gs;
+  return BASE_G[item.name] || 0;
 }
 
-// калорийность блюда с учётом глобальной шкалы граммовок и ручной порции
-function itemKcal(item, coef) {
+// установленная граммовка для слота в граммах (0/undefined — стандарт)
+function slotGrams(p, slot) {
+  const g = p.grams && p.grams[slot];
+  return (typeof g === "number" && g > 0) ? g : 0;
+}
+
+// фактический вес порции блюда: сохранённая граммовка слота или базовая
+function itemGrams(item, slotG) {
+  return slotG > 0 ? slotG : baseGrams(item);
+}
+
+// калорийность блюда при заданной граммовке (в граммах; 0 = стандартная порция)
+function itemKcal(item, grams) {
   if (!item || !item.kcal) return 0;
-  return Math.round(item.kcal * getGramScale() * coef);
+  const bg = baseGrams(item);
+  if (!bg || !grams || grams <= 0) return Math.round(item.kcal);
+  return Math.round(item.kcal * grams / bg);
 }
 
 // сумма калорий за день (на одного)
@@ -84,18 +114,20 @@ function dayKcal(p) {
   let sum = 0;
   SLOT_ORDER.forEach(s => {
     const idx = p[s];
-    if (typeof idx === "number" && BANK[s].items[idx]) sum += itemKcal(BANK[s].items[idx], slotCoef(p, s));
+    if (typeof idx === "number" && BANK[s].items[idx]) sum += itemKcal(BANK[s].items[idx], slotGrams(p, s));
   });
   return sum;
 }
 
-// установить ручную порцию для слота (null/1 — сброс)
-function setSlotCoef(slot, coef) {
+// установить граммовку слота в граммах (null/0 — сброс к стандарту)
+function setSlotGrams(slot, grams) {
   const plan = loadPlan();
   const p = plan[currentDate] || {};
-  if (!p.portions) p.portions = {};
-  if (coef === null || coef === 1) delete p.portions[slot]; else p.portions[slot] = coef;
-  if (Object.keys(p).filter(k => k !== "portions").length === 0 && Object.keys(p.portions).length === 0) {
+  if (!p.grams) p.grams = {};
+  if (!grams || grams <= 0) delete p.grams[slot]; else p.grams[slot] = grams;
+  // миграция: старые доли (portions) убираем за ненадобностью
+  delete p.portions;
+  if (Object.keys(p).filter(k => k !== "grams").length === 0 && Object.keys(p.grams).length === 0) {
     delete plan[currentDate];
   } else {
     plan[currentDate] = p;
@@ -230,7 +262,9 @@ function renderDay() {
     const cat = BANK[slot];
     const idx = p[slot];
     const item = typeof idx === "number" ? cat.items[idx] : null;
-    const coef = slotCoef(p, slot);
+    const grams = slotGrams(p, slot);
+    const shownG = item ? itemGrams(item, grams) : 0;
+    const baseG = item ? baseGrams(item) : 0;
     const card = document.createElement("button");
     card.className = "slot-card" + (item ? "" : " empty");
     card.innerHTML = `
@@ -243,7 +277,8 @@ function renderDay() {
       </div>
       <div class="slot-side">
         <div class="slot-time">${cat.time}</div>
-        ${item ? `<div class="slot-kcal">${itemKcal(item, coef)} ккал${coef !== 1 ? ` <b>(${PORTION_LABELS[coef] || "×" + fmtNum(coef)})</b>` : ""}</div>` : ""}
+        ${item ? `<div class="slot-grams">${shownG > 0 ? shownG + " г" : ""}${grams > 0 && baseG > 0 && grams !== baseG ? ' <b>(станд. ' + baseG + " г)</b>" : ""}</div>
+        <div class="slot-kcal">${itemKcal(item, grams)} ккал</div>` : ""}
       </div>`;
     card.onclick = () => openModal(slot);
     wrap.appendChild(card);
@@ -286,71 +321,106 @@ document.getElementById("btnLike").onclick = () => {
 };
 
 // ---------- МОДАЛКА ВЫБОРА ----------
-let modalCoef = 1; // текущая выбранная порция в открытой модалке
+let modalGrams = 0; // текущая граммовка в открытой модалке (в граммах; 0 = стандарт)
 
 function openModal(slot) {
   currentSlot = slot;
   const cat = BANK[slot];
   const p = getDayPlan();
-  modalCoef = slotCoef(p, slot);
+  modalGrams = slotGrams(p, slot);
   document.getElementById("modalTitle").textContent = `${cat.icon} ${cat.slotLabel} (${cat.time})`;
   const list = document.getElementById("modalList");
   list.innerHTML = "";
   cat.items.forEach((item, i) => {
     const b = document.createElement("button");
     b.className = "choice-item" + (p[slot] === i ? " chosen" : "");
+    const g = itemGrams(item, modalGrams);
     b.innerHTML = `<div class="choice-name">${p[slot] === i ? "✅ " : ""}${item.name}</div>
       <div class="choice-desc">${item.desc}</div>
       ${item.hint ? `<div class="choice-hint">💡 ${item.hint}</div>` : ""}
-      ${item.kcal ? `<div class="choice-kcal">🔥 ${itemKcal(item, modalCoef)} ккал${modalCoef !== 1 ? ` <b>(${PORTION_LABELS[modalCoef] || "×" + fmtNum(modalCoef)})</b>` : ""}</div>` : ""}`;
-    b.onclick = () => { setSlot(slot, i); if (modalCoef !== 1) setSlotCoef(slot, modalCoef); closeModal(); renderDay(); };
+      ${item.kcal ? `<div class="choice-kcal">🔥 ${itemKcal(item, modalGrams)} ккал${g > 0 ? ` · ${g} г` : ""}</div>` : ""}`;
+    b.onclick = () => {
+      setSlot(slot, i);
+      if (modalGrams > 0) setSlotGrams(slot, modalGrams);
+      closeModal(); renderDay();
+    };
     list.appendChild(b);
   });
-  renderPortionRow(!!(typeof p[slot] === "number"));
+  renderPortionRow(typeof p[slot] === "number");
   document.getElementById("modal").style.display = "flex";
 }
 
-// строка выбора граммовки внутри шторки
+// строка ввода граммовки внутри шторки
 function renderPortionRow(hasChoice) {
+  const item = hasChoice ? BANK[currentSlot].items[getDayPlan()[currentSlot]] : null;
+  const baseG = item ? baseGrams(item) : 0;
+  const curG = item ? itemGrams(item, modalGrams) : 0;
+  const input = document.getElementById("portionInput");
+  const minus = document.getElementById("portionMinus");
+  const plus = document.getElementById("portionPlus");
+  const reset = document.getElementById("portionReset");
   const label = document.getElementById("portionValue");
-  const cur = itemKcalCur();
-  label.textContent = cur ? cur.toLocaleString("ru-RU") + " ккал" : "сначала выберите блюдо";
-  const wrap = document.getElementById("portionPresets");
-  wrap.innerHTML = "";
-  PORTION_PRESETS.forEach(c => {
-    const b = document.createElement("button");
-    b.className = "portion-btn" + (c === modalCoef ? " active" : "");
-    b.textContent = PORTION_LABELS[c];
-    b.disabled = !hasChoice;
-    b.onclick = () => {
-      modalCoef = c;
-      if (hasChoice) setSlotCoef(currentSlot, c);
-      // пересчитываем калорийность во всех вариантах шторки
-      const items = BANK[currentSlot].items;
-      Array.from(document.getElementById("modalList").children).forEach((el, i) => {
-        const item = items[i];
-        if (!item || !item.kcal) return;
-        const k = el.querySelector(".choice-kcal");
-        if (k) k.innerHTML = `🔥 ${itemKcal(item, modalCoef)} ккал${modalCoef !== 1 ? ` <b>(${PORTION_LABELS[modalCoef] || "×" + fmtNum(modalCoef)})</b>` : ""}`;
-      });
-      renderPortionRow(hasChoice);
-      renderDay();
-    };
-    wrap.appendChild(b);
-  });
+
+  input.disabled = !hasChoice;
+  minus.disabled = !hasChoice;
+  plus.disabled = !hasChoice;
+  reset.disabled = !(hasChoice && modalGrams > 0);
+  input.value = curG > 0 ? curG : "";
+  input.placeholder = hasChoice ? "стандарт" : "—";
+
+  if (!hasChoice || !item || !item.kcal) {
+    label.textContent = "сначала выберите блюдо";
+  } else {
+    let txt = `${itemKcal(item, modalGrams)} ккал`;
+    if (baseG > 0) txt += ` · стандарт ${baseG} г`;
+    label.textContent = txt;
+  }
 }
 
-function itemKcalCur() {
+// применить граммовку из поля ввода (в граммах)
+function applyModalGrams(g) {
   const p = getDayPlan();
-  const idx = p[currentSlot];
-  if (typeof idx !== "number") return 0;
-  return itemKcal(BANK[currentSlot].items[idx], modalCoef);
+  if (typeof p[currentSlot] !== "number") return;
+  modalGrams = g;
+  setSlotGrams(currentSlot, g);
+  // пересчитываем калорийность/вес во всех вариантах шторки
+  const items = BANK[currentSlot].items;
+  Array.from(document.getElementById("modalList").children).forEach((el, i) => {
+    const item = items[i];
+    if (!item || !item.kcal) return;
+    const k = el.querySelector(".choice-kcal");
+    const gg = itemGrams(item, modalGrams);
+    if (k) k.innerHTML = `🔥 ${itemKcal(item, modalGrams)} ккал${gg > 0 ? ` · ${gg} г` : ""}`;
+  });
+  renderPortionRow(true);
+  renderDay();
 }
+
+document.getElementById("portionInput").onchange = (e) => {
+  const v = parseInt(e.target.value, 10);
+  applyModalGrams(isNaN(v) || v <= 0 ? 0 : Math.min(3000, v));
+};
+document.getElementById("portionMinus").onclick = () => {
+  const p = getDayPlan();
+  const item = typeof p[currentSlot] === "number" ? BANK[currentSlot].items[p[currentSlot]] : null;
+  const bg = item ? baseGrams(item) : 0;
+  const cur = item ? itemGrams(item, modalGrams) : 0;
+  if (cur > 50) applyModalGrams(Math.max(50, cur - 50));
+  else if (bg && cur >= bg) applyModalGrams(bg - 50);
+};
+document.getElementById("portionPlus").onclick = () => {
+  const p = getDayPlan();
+  const item = typeof p[currentSlot] === "number" ? BANK[currentSlot].items[p[currentSlot]] : null;
+  const cur = item ? itemGrams(item, modalGrams) : 0;
+  if (cur > 0) applyModalGrams(Math.min(3000, cur + 50));
+  else if (item) applyModalGrams(Math.min(3000, baseGrams(item) + 50));
+};
+document.getElementById("portionReset").onclick = () => applyModalGrams(0);
 
 function closeModal() { document.getElementById("modal").style.display = "none"; }
 document.getElementById("modalClose").onclick = closeModal;
 document.getElementById("modalBackdrop").onclick = closeModal;
-document.getElementById("modalClear").onclick = () => { setSlot(currentSlot, null); setSlotCoef(currentSlot, null); closeModal(); renderDay(); };
+document.getElementById("modalClear").onclick = () => { setSlot(currentSlot, null); setSlotGrams(currentSlot, 0); closeModal(); renderDay(); };
 
 // ---------- БАНК ----------
 function renderBank() {
@@ -377,10 +447,10 @@ document.getElementById("btnBackBank").onclick = () => showScreen("calendar");
 // ---------- НАСТРОЙКИ (цель калорий + граммовки) ----------
 const PRESETS = [2500, 3000, 3500, 4000];
 const GRAM_PRESETS = [
-  { v: 0.75, label: "Маленькие ×0.75" },
-  { v: 1,    label: "Обычные ×1" },
-  { v: 1.25, label: "Большие ×1.25" },
-  { v: 1.5,  label: "Огромные ×1.5" }
+  { v: 0,    label: "Как в банке" },
+  { v: 300,  label: "Маленькие · 300 г" },
+  { v: 450,  label: "Средние · 450 г" },
+  { v: 600,  label: "Большие · 600 г" }
 ];
 function renderSettings() {
   const goal = getGoal();
@@ -396,9 +466,9 @@ function renderSettings() {
     wrap.appendChild(b);
   });
 
-  // шкала граммовок
+  // базовая граммовка всех блюд (в граммах)
   const gs = getGramScale();
-  document.getElementById("gramValue").textContent = "×" + fmtNum(gs);
+  document.getElementById("gramValue").textContent = gs > 0 ? gs + " г" : "как в банке";
   document.getElementById("gramSlider").value = gs;
   const gwrap = document.getElementById("gramPresets");
   gwrap.innerHTML = "";
@@ -413,7 +483,7 @@ function renderSettings() {
 document.getElementById("goalMinus").onclick = () => { setGoal(Math.max(1500, getGoal() - 100)); renderSettings(); };
 document.getElementById("goalPlus").onclick = () => { setGoal(Math.min(5000, getGoal() + 100)); renderSettings(); };
 document.getElementById("goalSlider").oninput = (e) => { setGoal(parseInt(e.target.value, 10)); renderSettings(); };
-document.getElementById("gramSlider").oninput = (e) => { setGramScale(parseFloat(e.target.value)); renderSettings(); };
+document.getElementById("gramSlider").oninput = (e) => { setGramScale(parseInt(e.target.value, 10)); renderSettings(); };
 
 // ---------- ТОСТ ----------
 let toastTimer = null;
@@ -444,7 +514,12 @@ document.getElementById("btnInstallClose").onclick = () => {
   document.getElementById("installBanner").style.display = "none";
 };
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
+  // относительный путь + новый scope: важно для GitHub Pages (*.github.io/репозиторий/)
+  const swUrl = new URL("sw.js", location.href).href;
+  const swScope = new URL("./", location.href).href;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(swUrl, { scope: swScope }).catch(() => {});
+  });
 }
 
 // ---------- СТАРТ ----------
