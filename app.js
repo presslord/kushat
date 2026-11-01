@@ -444,7 +444,12 @@ document.getElementById("btnInstallClose").onclick = () => {
   document.getElementById("installBanner").style.display = "none";
 };
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
+  // относительный путь + новый scope: важно для GitHub Pages (*.github.io/репозиторий/)
+  const swUrl = new URL("sw.js", location.href).href;
+  const swScope = new URL("./", location.href).href;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(swUrl, { scope: swScope }).catch(() => {});
+  });
 }
 
 // ---------- СТАРТ ----------
