@@ -129,6 +129,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .slot-time { font-size: 11px; color: var(--muted); flex: none; background: var(--bg); border: 1px solid var(--line); padding: 3px 8px; border-radius: 999px; }
 .slot-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; align-self: flex-start; margin-top: 3px; }
 .slot-kcal { font-size: 11.5px; font-weight: 800; color: var(--accent-strong); background: var(--accent-soft); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.slot-grams { font-size: 11px; font-weight: 800; color: var(--muted); background: var(--bg); border: 1px solid var(--line); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.slot-grams b { color: var(--amber); font-weight: 800; }
 
 /* ---------- Счётчик калорий ---------- */
 .kcal-card { padding: 14px 16px; margin-bottom: 14px; }
@@ -220,11 +222,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .portion-row { padding: 2px 0 10px; }
 .portion-head { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 8px; }
 .portion-head span { font-size: 12px; font-weight: 700; color: var(--accent-strong); text-transform: none; letter-spacing: 0; }
-.portion-presets { display: flex; gap: 6px; }
-.portion-btn { flex: 1; padding: 9px 2px; border-radius: 12px; background: var(--bg); border: 1.5px solid var(--line); font-size: 13px; font-weight: 800; color: var(--muted); transition: all .12s; }
-.portion-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.portion-btn:disabled { opacity: .4; }
-.portion-btn:not(:disabled):active { transform: scale(.93); }
+.portion-controls { display: flex; align-items: center; gap: 6px; }
+.portion-step { padding: 9px 12px; border-radius: 12px; background: var(--bg); border: 1.5px solid var(--line); font-size: 13px; font-weight: 800; color: var(--muted); transition: all .12s; white-space: nowrap; }
+.portion-step:not(:disabled):active { transform: scale(.93); }
+.portion-step:disabled, .portion-reset:disabled { opacity: .4; }
+.portion-input { width: 84px; flex: 0 0 auto; padding: 9px 10px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 16px; font-weight: 800; color: var(--text); text-align: center; -moz-appearance: textfield; appearance: textfield; }
+.portion-input::-webkit-outer-spin-button, .portion-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.portion-input:disabled { opacity: .4; background: var(--bg); }
+.portion-unit { font-size: 13px; font-weight: 800; color: var(--muted); margin-right: 2px; }
+.portion-reset { margin-left: auto; padding: 9px 12px; border-radius: 12px; background: var(--bg); border: 1.5px dashed var(--line); font-size: 12.5px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+.portion-reset:not(:disabled) { border-color: var(--accent); color: var(--accent-strong); }
 .slot-kcal b { color: var(--amber); }
 .choice-kcal b { color: var(--amber); }
 

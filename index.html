@@ -113,11 +113,11 @@
 
       <div class="card settings-card gram-card">
         <h2 class="settings-title">⚖️ Граммовки блюд</h2>
-        <p class="settings-note">Обычные порции из банка — это <b>×1</b>. Увеличьте шкалу, если готовы есть больше (все калории пересчитаются), или уменьшите, если такие порции велики. Для отдельного приёма пищи граммовку можно менять точечно — прямо в шторке выбора блюда.</p>
+        <p class="settings-note">Базовая граммовка для <b>всех</b> блюд — в граммах. «Как в банке» использует стандартные порции каждого блюда; задайте свой вес (например 450 г), и калорийность всех блюд пересчитается пропорционально. Для отдельного приёма пищи граммовку можно менять точечно — прямо в шторке выбора блюда.</p>
         <div class="gram-row">
-          <div class="gram-value"><span id="gramValue">×1</span><small>к базовым порциям</small></div>
+          <div class="gram-value"><span id="gramValue">как в банке</span><small>базовый вес одной порции</small></div>
         </div>
-        <input type="range" id="gramSlider" min="0.5" max="2" step="0.05" value="1" />
+        <input type="range" id="gramSlider" min="0" max="1000" step="50" value="0" />
         <div class="goal-presets gram-presets" id="gramPresets"></div>
       </div>
     </section>
@@ -135,7 +135,13 @@
         </div>
         <div class="portion-row">
           <div class="portion-head">⚖️ Граммовка<span id="portionValue"></span></div>
-          <div class="portion-presets" id="portionPresets"></div>
+          <div class="portion-controls">
+            <button class="portion-step" id="portionMinus" type="button">−50</button>
+            <input class="portion-input" id="portionInput" type="number" min="50" max="3000" step="10" inputmode="numeric" placeholder="—" />
+            <span class="portion-unit">г</span>
+            <button class="portion-step" id="portionPlus" type="button">+50</button>
+            <button class="portion-reset" id="portionReset" type="button">↺ стандарт</button>
+          </div>
         </div>
         <div id="modalList" class="modal-list"></div>
         <button id="modalClear" class="btn-clear">🗑 Очистить слот</button>
