@@ -53,6 +53,7 @@ const SLOT_ORDER = ["breakfast", "snack1", "lunch", "snack2", "dinner"];
 const LS_PLAN = "foodday.plan.v2";   // { "2026-10-31": { breakfast: 0, snack1: 2, ..., grams: { breakfast: 400 }, liked: bool } }
 const LS_GOAL = "foodday.kcalGoal";  // целевой калораж на день (на одного)
 const LS_GRAM = "foodday.gramScale"; // базовая граммовка блюда (г): 0 = стандарт из банка
+const LS_THEME = "foodday.theme";    // тема оформления: green|pink|blue|red|violet|gradient
 
 function loadPlan() { try { return JSON.parse(localStorage.getItem(LS_PLAN)) || {}; } catch (e) { return {}; } }
 function savePlan(plan) { localStorage.setItem(LS_PLAN, JSON.stringify(plan)); }
@@ -60,6 +61,58 @@ function getGoal() { const g = parseInt(localStorage.getItem(LS_GOAL), 10); retu
 function setGoal(v) { localStorage.setItem(LS_GOAL, String(v)); }
 function getGramScale() { const g = parseInt(localStorage.getItem(LS_GRAM), 10); return (isNaN(g) || g < 0) ? 0 : g; }
 function setGramScale(v) { localStorage.setItem(LS_GRAM, String(v)); }
+
+// ---------- ТЕМЫ ----------
+const THEMES = [
+  { id: "green",    label: "Зелёная",   solid: "#2e9e5b" },
+  { id: "pink",     label: "Розовая",   solid: "#e0489a" },
+  { id: "blue",     label: "Синяя",     solid: "#2f7fd1" },
+  { id: "red",      label: "Красная",   solid: "#d94a3d" },
+  { id: "violet",   label: "Фиолет.",   solid: "#7c5cd6" },
+  { id: "gradient", label: "Градиент",  solid: null } // акцент переливается по часам
+];
+function getTheme() {
+  const t = localStorage.getItem(LS_THEME);
+  return THEMES.some(x => x.id === t) ? t : "green";
+}
+let gradTimer = null;
+function stopGradientPulse() { if (gradTimer) { clearInterval(gradTimer); gradTimer = null; } }
+function startGradientPulse() {
+  stopGradientPulse();
+  const hue = () => (Date.now() / 60000 * 360) % 360;                 // полный круг за 60 сек
+  const apply = () => {
+    const h = hue();
+    document.documentElement.style.setProperty("--accent-now", `hsl(${h.toFixed(1)}, 68%, 52%)`);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", `hsl(${h.toFixed(1)}, 68%, 95%)`);
+  };
+  apply();
+  gradTimer = setInterval(apply, 1000);
+}
+function setTheme(id) {
+  const theme = THEMES.find(t => t.id === id) || THEMES[0];
+  localStorage.setItem(LS_THEME, theme.id);
+  if (theme.id === "green") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme.id);
+  document.documentElement.style.removeProperty("--accent-now");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", theme.id === "green" ? "#f3f6f2" : "#ffffff");
+  if (theme.id === "gradient") startGradientPulse(); else stopGradientPulse();
+}
+function renderThemePicker() {
+  const cur = getTheme();
+  const wrap = document.getElementById("themeRow");
+  wrap.innerHTML = "";
+  THEMES.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "theme-dot" + (t.id === cur ? " active" : "");
+    b.dataset.theme = t.id;
+    b.title = t.label;
+    b.setAttribute("aria-label", "Тема: " + t.label);
+    b.onclick = () => { setTheme(t.id); renderThemePicker(); toast("Тема: " + t.label.toLowerCase()); };
+    wrap.appendChild(b);
+  });
+}
 
 // ---------- ГРАММОВКИ / ПОРЦИИ ----------
 // базовый вес одной порции каждого блюда (граммы). 0 — блюдо без веса (например напиток)
@@ -479,6 +532,9 @@ function renderSettings() {
     b.onclick = () => { setGramScale(p.v); renderSettings(); if (document.getElementById("screen-day").classList.contains("active")) renderDay(); };
     gwrap.appendChild(b);
   });
+
+  // тема оформления
+  renderThemePicker();
 }
 document.getElementById("goalMinus").onclick = () => { setGoal(Math.max(1500, getGoal() - 100)); renderSettings(); };
 document.getElementById("goalPlus").onclick = () => { setGoal(Math.min(5000, getGoal() + 100)); renderSettings(); };
@@ -523,5 +579,6 @@ if ("serviceWorker" in navigator) {
 }
 
 // ---------- СТАРТ ----------
+setTheme(getTheme());   // применяем сохранённую тему до первой отрисовки
 buildNavs();
 showScreen("calendar");

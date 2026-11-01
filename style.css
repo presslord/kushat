@@ -15,6 +15,46 @@
   --shadow: 0 1px 2px rgba(23,36,28,.05), 0 6px 18px rgba(23,36,28,.06);
   --nav-h: calc(62px + env(safe-area-inset-bottom)); /* реальная высота нижней навигации */
 }
+
+/* ===== ТЕМЫ (переключаются атрибутом data-theme на <html>) ===== */
+html[data-theme="pink"] {
+  --bg: #fdf1f5; --surface: #ffffff; --ink: #2c1a22; --muted: #9b8290; --line: #f2dbe4;
+  --accent: #e0489a; --accent-strong: #c23682; --accent-soft: #fbe3ef;
+  --green: #e0489a; --pink: #d63b8b;
+}
+html[data-theme="blue"] {
+  --bg: #eff4fb; --surface: #ffffff; --ink: #16222f; --muted: #7f8b99; --line: #dde6f0;
+  --accent: #2f7fd1; --accent-strong: #2266ad; --accent-soft: #e0edf9;
+  --green: #2f7fd1; --pink: #e8436f;
+}
+html[data-theme="red"] {
+  --bg: #fcf1ef; --surface: #ffffff; --ink: #2d1a16; --muted: #9c827c; --line: #f1dbd6;
+  --accent: #d94a3d; --accent-strong: #b93a2f; --accent-soft: #fae2de;
+  --green: #d94a3d; --pink: #e8436f;
+}
+html[data-theme="violet"] {
+  --bg: #f4f1fb; --surface: #ffffff; --ink: #221b31; --muted: #8a839c; --line: #e5dff2;
+  --accent: #7c5cd6; --accent-strong: #6647bd; --accent-soft: #ece5f9;
+  --green: #7c5cd6; --pink: #e8436f;
+}
+/* градиент: фон и акценты «текут» по часам (акцент задаётся из app.js в --accent-now) */
+html[data-theme="gradient"] {
+  --bg: #f4f2fa; --surface: #ffffff; --ink: #201d2b; --muted: #8b8798; --line: #e7e3f0;
+  --accent: var(--accent-now, #7c5cd6);
+  --accent-strong: color-mix(in srgb, var(--accent-now, #7c5cd6) 82%, #1c1c28);
+  --accent-soft: color-mix(in srgb, var(--accent-now, #7c5cd6) 15%, #ffffff);
+  --green: var(--accent-now, #7c5cd6);
+  --pink: var(--accent-now, #7c5cd6);
+}
+html[data-theme="gradient"] body {
+  background: linear-gradient(160deg, #ffe1ec 0%, #e6e4ff 35%, #d3f0ff 65%, #dcfce7 100%);
+  background-attachment: fixed;
+}
+html[data-theme="gradient"] #app { background: transparent; }
+html[data-theme="gradient"] .card,
+html[data-theme="gradient"] .modal-sheet,
+html[data-theme="gradient"] .bottom-nav { backdrop-filter: blur(6px); }
+html[data-theme="gradient"] .cal-cell.today { color: var(--accent); }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 body {
@@ -157,6 +197,28 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .goal-presets { display: flex; gap: 8px; }
 .preset { flex: 1; padding: 10px 4px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--muted); }
 .preset.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ---------- Выбор темы ---------- */
+.theme-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; padding: 6px 2px 2px; }
+.theme-dot {
+  width: 52px; height: 52px; border-radius: 50%; position: relative;
+  border: 3px solid var(--line); box-shadow: var(--shadow); transition: transform .12s ease;
+}
+.theme-dot:active { transform: scale(.9); }
+.theme-dot[data-theme="green"]   { background: linear-gradient(145deg, #4cc47f, #2e9e5b); }
+.theme-dot[data-theme="pink"]    { background: linear-gradient(145deg, #ff8ec2, #e0489a); }
+.theme-dot[data-theme="blue"]    { background: linear-gradient(145deg, #6db3ef, #2f7fd1); }
+.theme-dot[data-theme="red"]     { background: linear-gradient(145deg, #ff8a76, #d94a3d); }
+.theme-dot[data-theme="violet"]  { background: linear-gradient(145deg, #ab8cf2, #7c5cd6); }
+.theme-dot[data-theme="gradient"]{ background: linear-gradient(145deg, #ffe1ec 0%, #a5b4fc 40%, #7dd3fc 70%, #86efac 100%); }
+.theme-dot.active { border-color: var(--accent); }
+.theme-dot.active::after {
+  content: "✓"; position: absolute; inset: 0; display: grid; place-items: center;
+  color: #fff; font-size: 20px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+.theme-names { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; margin-top: 10px; }
+.theme-name { font-size: 11.5px; font-weight: 700; color: var(--muted); width: 52px; text-align: center; }
+.theme-name.active { color: var(--accent-strong); }
 
 /* ---------- Действия ---------- */
 .actions-row { display: flex; gap: 10px; margin-top: 16px; }
